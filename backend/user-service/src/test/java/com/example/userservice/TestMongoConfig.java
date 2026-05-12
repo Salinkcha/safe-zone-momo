@@ -24,7 +24,7 @@ public class TestMongoConfig {
         int port = 27017;
 
         MongodConfig mongodConfig = MongodConfig.builder()
-                .version(Version.Main.V6_0)
+                .version(Version.V4_4_16)
                 .net(new Net(ip, port, Network.localhostIsIPv6()))
                 .build();
 
