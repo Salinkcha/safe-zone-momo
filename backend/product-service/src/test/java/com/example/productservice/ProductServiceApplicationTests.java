@@ -8,13 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-    "INTERNAL_TOKEN=test-internal-token-for-microservices",
-    "spring.data.mongodb.uri=mongodb://localhost:27017/test-products"
-})
+@ActiveProfiles("test")
 class ProductServiceApplicationTests {
 
     @Autowired
