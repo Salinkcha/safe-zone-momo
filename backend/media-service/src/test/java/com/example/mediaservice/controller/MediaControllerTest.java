@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.example.mediaservice.model.Media;
 import com.example.mediaservice.repository.MediaRepository;
 
+@ActiveProfiles("test")
 @SpringBootTest
 class MediaControllerTest {
 
