@@ -55,7 +55,8 @@ pipeline {
         stage('Build & Test Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm install'
+                    sh 'npm ci --unsafe-perm'
+                    sh 'npx puppeteer install'
                     sh 'npm run build'
                     sh 'export CI=true && npm test -- --project=buy-frontend'
                 }
