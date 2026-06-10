@@ -63,52 +63,54 @@ pipeline {
             }
         }
     
-        stage('Deploy with Rollback Strategy') {
-            steps {
-                script {
-                    echo '🚀 Starting deployment process...'
+        // stage('Deploy with Rollback Strategy') {
+        //     steps {
+        //         script {
+        //             echo '🚀 Starting deployment process...'
                     
-                    sh '''
-                        docker compose pull || true
-                        docker images --format "{{.Repository}}:{{.Tag}}" | grep buy-01 | grep latest > /tmp/current_images.txt || true
-                        for img in $(cat /tmp/current_images.txt); do
-                            docker tag $img ${img}-backup || true
-                        done
-                    '''
+        //             sh '''
+        //                 docker compose pull || true
+        //                 docker images --format "{{.Repository}}:{{.Tag}}" | grep buy-01 | grep latest > /tmp/current_images.txt || true
+        //                 for img in $(cat /tmp/current_images.txt); do
+        //                     docker tag $img ${img}-backup || true
+        //                 done
+        //             '''
                     
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        sh '''
-                            docker compose -p buy-01 build
-                            docker compose -p buy-01 up -d
+        //             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        //                 sh '''
+        //                     docker compose -p buy-01 build --no-cache user-service product-service media-service frontend mongo
+        //                     docker compose -p buy-01 up -d user-service product-service media-service frontend mongo
                             
-                            sleep 15
+        //                     sleep 15
                             
-                            if docker ps | grep "Restarting\\|Exited" | grep "buy-01"; then
-                                exit 1
-                            fi
-                        '''
-                    }
+        //                     if docker ps | grep "Restarting\\|Exited" | grep "buy-01"; then
+        //                         exit 1
+        //                     fi
+        //                 '''
+        //             }
                     
-                    if (currentBuild.currentResult == 'FAILURE') {
-                        sh '''
-                            for img in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep backup); do
-                                original=$(echo $img | sed 's/-backup//')
-                                docker tag $img $original || true
-                            done
+        //             if (currentBuild.currentResult == 'FAILURE') {
+        //                 sh '''
+        //                     for img in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep backup); do
+        //                         original=$(echo $img | sed 's/-backup//')
+        //                         docker tag $img $original || true
+        //                     done
                             
-                            docker compose -p buy-01 up -d
-                        '''
-                        error('Deployment failed. Rollback was executed.')
-                    }
-                }
-            }
-        }
+        //                     docker compose -p buy-01 up -d
+        //                 '''
+        //                 error('Deployment failed. Rollback was executed.')
+        //             }
+        //         }
+        //     }
+        // }
     }
     
     post {
         always {
             echo "📊 Pipeline execution finished. Status: ${currentBuild.currentResult}"
-            junit '**/target/surefire-reports/*.xml'
+            node {
+                junit '**/target/surefire-reports/*.xml'
+            }
         }
         success {
             echo '🎉 All stages completed successfully!'

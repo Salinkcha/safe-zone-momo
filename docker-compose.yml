@@ -23,6 +23,8 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - GIT_CONFIG_GLOBAL=/var/jenkins_home/.gitconfig
 
   frontend:
     build: ./frontend
