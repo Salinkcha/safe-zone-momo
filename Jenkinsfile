@@ -105,19 +105,18 @@ pipeline {
                         sh 'docker compose -p buy-01 build frontend user-service product-service media-service'
                         sh 'docker compose -p buy-01 up -d --force-recreate frontend user-service product-service media-service'
                         sh 'echo "Waiting for services to stabilize... && sleep 10"'
-                        sh 'exit 1'   // Error trigger for rollback testing
+                        // sh 'exit 1'   // Error trigger for rollback testing
                         
                     } catch (Exception e) {
                         echo '❌ Error detected, rollback starting...'
                         sh '''
-                            # Restaurer uniquement les images applicatives qui ont un backup (sans boucle infinie)
                             for service in frontend user-service product-service media-service; do
                                 if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "buy-01-${service}:latest-backup"; then
                                     docker tag buy-01-${service}:latest-backup buy-01-${service}:latest
                                     echo "Restored buy-01-${service}"
                                 fi
                             done
-                            docker compose -p buy-01 up -d mongo frontend user-service product-service media-service
+                            docker compose -p buy-01 up -d --force-recreate frontend user-service product-service media-service
                         '''
                         error('Deployment failed and rollback executed. Check logs for details.')
                     }
@@ -134,6 +133,8 @@ pipeline {
                         for service in frontend user-service product-service media-service; do
                             if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "buy-01-${service}:latest-backup"; then
                                 docker tag buy-01-${service}:latest-backup buy-01-${service}:latest
+                                echo "Restored buy-01-${service}"
+
                             fi
                         done
                         docker compose -p buy-01 up -d --force-recreate frontend user-service product-service media-service
