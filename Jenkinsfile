@@ -25,7 +25,7 @@ pipeline {
             when { expression { params.ROLLBACK == false } }
             steps {
                 echo 'Git Checkout in Progress...'
-                git branch: 'main', url: 'https://github.com/Dahreau/safe-zone'
+                git branch: 'main', url: 'https://github.com/Salinkcha/safe-zone-momo.git'
         sh 'ls backend'
         sh 'ls frontend'
             }
@@ -169,7 +169,7 @@ pipeline {
         success {
             echo '🎉 All stages completed successfully!'
             mail(
-                to: 'darosamakypro@gmail.com',
+                to: 'mohammedsoumare25@gmail.com',
                 subject: "✅ SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
                 body: """
                     Build réussi !
@@ -183,7 +183,7 @@ pipeline {
         failure {
             echo '❌ Pipeline failed! Check logs above.'
             mail(
-                to: 'darosamakypro@gmail.com',
+                to: 'mohammedsoumare25@gmail.com',
                 subject: "❌ FAILURE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
                 body: """
                     Build échoué !
