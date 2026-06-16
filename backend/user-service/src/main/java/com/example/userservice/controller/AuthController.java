@@ -27,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
-        // int error = "error"; // Error code for testing purposes
+        int error = "error"; // Error code for testing purposes
         String name = body.get("name");
         String email = body.get("email");
         String password = body.get("password");
