@@ -61,7 +61,7 @@ pipeline {
                         dir('backend/user-service') {
                             sh 'mvn clean test'
                             withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user"'
+                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
                             }
                         }
                     }
@@ -71,7 +71,7 @@ pipeline {
                         dir('backend/product-service') {
                             sh 'mvn clean test'
                             withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product"'
+                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
                             }
                         }
                     }
@@ -81,7 +81,7 @@ pipeline {
                         dir('backend/media-service') {
                             sh 'mvn clean test'
                             withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media"'
+                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
                             }
                         }
                     }
