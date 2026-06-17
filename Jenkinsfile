@@ -24,10 +24,11 @@ pipeline {
         stage('Checkout Git') {
             when { expression { params.ROLLBACK == false } }
             steps {
+                sh 'docker network connect safe-zone_buy-net buy-01-jenkins-1 || true'
                 echo 'Git Checkout in Progress...'
                 git branch: 'main', url: 'https://github.com/Dahreau/safe-zone'
-        sh 'ls backend'
-        sh 'ls frontend'
+                sh 'ls backend'
+                sh 'ls frontend'
             }
         }
 
