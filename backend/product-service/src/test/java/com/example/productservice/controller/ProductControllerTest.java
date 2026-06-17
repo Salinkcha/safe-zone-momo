@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.example.productservice.dto.ProductDTO;
 import com.example.productservice.model.Product;
 import com.example.productservice.repository.ProductRepository;
 
@@ -121,7 +122,7 @@ class ProductControllerTest {
     @WithMockUser(roles = "SELLER", username = "seller1")
     void createProduct_AsSeller_ShouldSucceed() {
         // Given
-        Product product = new Product();
+        ProductDTO product = new ProductDTO();
         product.setName("Seller's Product");
         product.setPrice(49.99);
 
@@ -139,7 +140,7 @@ class ProductControllerTest {
     @WithMockUser(roles = "USER")
     void createProduct_AsUser_ShouldReturnForbidden() {
         // Given
-        Product product = new Product();
+        ProductDTO product = new ProductDTO();
         product.setName("User's Product");
 
         // When
