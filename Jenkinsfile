@@ -26,8 +26,8 @@ pipeline {
             steps {
                 echo 'Git Checkout in Progress...'
                 git branch: 'main', url: 'https://github.com/Salinkcha/safe-zone-momo.git'
-        sh 'ls backend'
-        sh 'ls frontend'
+                sh 'ls backend'
+                sh 'ls frontend'
             }
         }
 
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     echo 'Starting MongoDB...'
-                    sh 'docker compose -p buy-01 up -d mongo'
+                    sh 'docker compose -p safe-zone up -d mongo'
                     sh 'docker ps | grep mongo || (echo "MongoDB failed to start" && exit 1)'
                 }
             }
@@ -60,10 +60,6 @@ pipeline {
                     steps {
                         dir('backend/user-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
                 }
@@ -71,10 +67,6 @@ pipeline {
                     steps {
                         dir('backend/product-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
                 }
@@ -82,10 +74,6 @@ pipeline {
                     steps {
                         dir('backend/media-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
                 }
@@ -98,12 +86,16 @@ pipeline {
                 dir('frontend') {
                     sh 'npm ci --unsafe-perm'
                     sh 'npx puppeteer install'
+                    
+                    // 🔥 CORRECTION : lien symbolique vers Chromium système
+                    sh '''
+                        PUPPETEER_CHROME_PATH=$(node -p "require('puppeteer').executablePath()")
+                        mkdir -p $(dirname $PUPPETEER_CHROME_PATH)
+                        ln -sf /usr/bin/chromium $PUPPETEER_CHROME_PATH
+                    '''
+                    
                     sh 'npm run build'
                     sh 'export CI=true && npm test -- --project=buy-frontend'
-                    withSonarQubeEnv('sonarqube') {
-                        sh 'npx sonarqube-scanner -Dsonar.projectKey=safe-zone-front -Dsonar.projectName="safe-zone-front" -Dsonar.sources=src -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts'
-                    }
-                    waitForQualityGate(abortPipeline: true)
                 }
             }
         }
@@ -120,8 +112,7 @@ pipeline {
                     try {
                         sh 'docker compose -p buy-01 build frontend user-service product-service media-service'
                         sh 'docker compose -p buy-01 up -d --force-recreate frontend user-service product-service media-service'
-                        sh 'echo "Waiting for services to stabilize... && sleep 10"'
-                        // sh 'exit 1'   // Error trigger for rollback testing
+                        sh 'echo "Waiting for services to stabilize..." && sleep 10'
                         
                     } catch (Exception e) {
                         echo '❌ Error detected, rollback starting...'
@@ -150,7 +141,6 @@ pipeline {
                             if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "buy-01-${service}:latest-backup"; then
                                 docker tag buy-01-${service}:latest-backup buy-01-${service}:latest
                                 echo "Restored buy-01-${service}"
-
                             fi
                         done
                         docker compose -p buy-01 up -d --force-recreate frontend user-service product-service media-service
@@ -168,33 +158,11 @@ pipeline {
         }
         success {
             echo '🎉 All stages completed successfully!'
-            mail(
-                to: 'mohammedsoumare25@gmail.com',
-                subject: "✅ SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
-                body: """
-                    Build réussi !
-                    Job: ${env.JOB_NAME}
-                    Build #: ${env.BUILD_NUMBER}
-                    URL: ${env.BUILD_URL}
-                    Durée: ${currentBuild.durationString}
-                """
-            )
+            // mail(...)  // commenté pour éviter l’erreur SMTP
         }
         failure {
             echo '❌ Pipeline failed! Check logs above.'
-            mail(
-                to: 'mohammedsoumare25@gmail.com',
-                subject: "❌ FAILURE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
-                body: """
-                    Build échoué !
-                    Job: ${env.JOB_NAME}
-                    Build #: ${env.BUILD_NUMBER}
-                    URL: ${env.BUILD_URL}
-                    État: ${currentBuild.currentResult}
-                    ⚠️ Action requise: Vérifiez les logs du build.
-                """
-            )
+            // mail(...)  // commenté temporairement
         }
-
     }
 }

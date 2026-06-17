@@ -25,8 +25,13 @@ RUN apt-get update && apt-get install -y \
     libxss1 \
     libxtst6 \
     xdg-utils \
-    curl
+    curl \
+    chromium   # 👈 Changement ici : chromium au lieu de chromium-browser
 
+# Installe Docker (comme avant)
 RUN curl -fsSL https://get.docker.com | sh
+
+# Définit la variable d'environnement pour que Karma trouve le navigateur
+ENV CHROME_BIN=/usr/bin/chromium
 
 USER jenkins
