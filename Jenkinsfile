@@ -85,18 +85,21 @@ stage('Build & Test Backend') {
             when { expression { params.ROLLBACK == false } }
             steps {
                 dir('backend/user-service') {
+                    script { env.CURRENT_SERVICE = 'User Service' }
                     withSonarQubeEnv('sonarqube') {
                         sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
                     }
                     waitForQualityGate(abortPipeline: true)
                 }
                 dir('backend/product-service') {
+                    script { env.CURRENT_SERVICE = 'Product Service' }
                     withSonarQubeEnv('sonarqube') {
                         sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
                     }
                     waitForQualityGate(abortPipeline: true)
                 }
                 dir('backend/media-service') {
+                    script { env.CURRENT_SERVICE = 'Media Service' }
                     withSonarQubeEnv('sonarqube') {
                         sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
                     }
@@ -185,7 +188,14 @@ stage('Build & Test Backend') {
                 to: 'darosamakypro@gmail.com',
                 subject: "✅ SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
                 body: """
-                    Build réussi !
+                    Build réussi avec succès !
+                    
+                    Dashboards SonarQube :
+                    - User Service : http://sonarqube:9000/dashboard?id=safe-zone-user
+                    - Product Service : http://sonarqube:9000/dashboard?id=safe-zone-product
+                    - Media Service : http://sonarqube:9000/dashboard?id=safe-zone-media
+                    - Frontend : http://sonarqube:9000/dashboard?id=safe-zone-front
+                    
                     Job: ${env.JOB_NAME}
                     Build #: ${env.BUILD_NUMBER}
                     URL: ${env.BUILD_URL}
@@ -200,14 +210,20 @@ stage('Build & Test Backend') {
                 subject: "❌ FAILURE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
                 body: """
                     Build échoué !
+                    Le pipeline a bloqué durant l'analyse du service : ${env.CURRENT_SERVICE ?: 'Initialisation / Tests'}
+                    
+                    Liens directs SonarQube pour vérification :
+                    - User Service : http://sonarqube:9000/dashboard?id=safe-zone-user
+                    - Product Service : http://sonarqube:9000/dashboard?id=safe-zone-product
+                    - Media Service : http://sonarqube:9000/dashboard?id=safe-zone-media
+                    - Frontend : http://sonarqube:9000/dashboard?id=safe-zone-front
+                    
                     Job: ${env.JOB_NAME}
                     Build #: ${env.BUILD_NUMBER}
                     URL: ${env.BUILD_URL}
                     État: ${currentBuild.currentResult}
-                    ⚠️ Action requise: Vérifiez les logs du build.
                 """
             )
         }
-
     }
 }
