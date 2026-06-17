@@ -54,41 +54,53 @@ pipeline {
             }
         }
         
-        stage('Build & Test Backend') {
+stage('Build & Test Backend') {
             when { expression { params.ROLLBACK == false } }
             parallel {
-                stage('User Service') {
+                stage('User Service Test') {
                     steps {
                         dir('backend/user-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
                 }
-                stage('Product Service') {
+                stage('Product Service Test') {
                     steps {
                         dir('backend/product-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
                 }
-                stage('Media Service') {
+                stage('Media Service Test') {
                     steps {
                         dir('backend/media-service') {
                             sh 'mvn clean test'
-                            withSonarQubeEnv('sonarqube') {
-                                sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
-                            }
-                            waitForQualityGate(abortPipeline: true)
                         }
                     }
+                }
+            }
+        }
+
+        stage('SonarQube Backend Analysis') {
+            when { expression { params.ROLLBACK == false } }
+            steps {
+                dir('backend/user-service') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
+                }
+                dir('backend/product-service') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
+                }
+                dir('backend/media-service') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
                 }
             }
         }
