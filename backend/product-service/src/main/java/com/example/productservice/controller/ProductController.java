@@ -135,7 +135,7 @@ public class ProductController {
         return existing;
     }
 
-    private static class ControllerException extends RuntimeException {
+    public static class ControllerException extends RuntimeException {
 
         private final transient ResponseEntity<Object> response;
 
