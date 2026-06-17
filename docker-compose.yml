@@ -69,7 +69,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/userdb
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27019/userdb
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_TOKEN=${INTERNAL_TOKEN}
     depends_on:
@@ -82,7 +82,7 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/productdb
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27019/productdb
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_TOKEN=${INTERNAL_TOKEN}
     depends_on:
@@ -95,7 +95,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/mediadb
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27019/mediadb
       - JWT_SECRET=${JWT_SECRET}
       - INTERNAL_TOKEN=${INTERNAL_TOKEN}
       - PRODUCT_SERVICE_URL=http://product-service:8082

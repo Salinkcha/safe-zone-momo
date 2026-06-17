@@ -24,10 +24,11 @@ pipeline {
         stage('Checkout Git') {
             when { expression { params.ROLLBACK == false } }
             steps {
+                sh 'docker network connect safe-zone_buy-net buy-01-jenkins-1 || true'
                 echo 'Git Checkout in Progress...'
-                git branch: 'main', url: 'https://github.com/Salinkcha/safe-zone-momo.git'
-                sh 'ls backend'
-                sh 'ls frontend'
+                git branch: 'main', url: 'https://github.com/Salinkcha/safe-zone-momo/'
+        sh 'ls backend'
+        sh 'ls frontend'
             }
         }
 
@@ -53,29 +54,56 @@ pipeline {
             }
         }
         
-        stage('Build & Test Backend') {
+stage('Build & Test Backend') {
             when { expression { params.ROLLBACK == false } }
             parallel {
-                stage('User Service') {
+                stage('User Service Test') {
                     steps {
                         dir('backend/user-service') {
                             sh 'mvn clean test'
                         }
                     }
                 }
-                stage('Product Service') {
+                stage('Product Service Test') {
                     steps {
                         dir('backend/product-service') {
                             sh 'mvn clean test'
                         }
                     }
                 }
-                stage('Media Service') {
+                stage('Media Service Test') {
                     steps {
                         dir('backend/media-service') {
                             sh 'mvn clean test'
                         }
                     }
+                }
+            }
+        }
+
+        stage('SonarQube Backend Analysis') {
+            when { expression { params.ROLLBACK == false } }
+            steps {
+                dir('backend/user-service') {
+                    script { env.CURRENT_SERVICE = 'User Service' }
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-user -Dsonar.projectName="safe-zone-user" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
+                }
+                dir('backend/product-service') {
+                    script { env.CURRENT_SERVICE = 'Product Service' }
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-product -Dsonar.projectName="safe-zone-product" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
+                }
+                dir('backend/media-service') {
+                    script { env.CURRENT_SERVICE = 'Media Service' }
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.projectKey=safe-zone-media -Dsonar.projectName="safe-zone-media" -Djava.net.preferIPv4Stack=true'
+                    }
+                    waitForQualityGate(abortPipeline: true)
                 }
             }
         }
@@ -158,11 +186,33 @@ pipeline {
         }
         success {
             echo '🎉 All stages completed successfully!'
-            // mail(...)  // commenté pour éviter l’erreur SMTP
+            mail(
+                to: 'mohammedsoumare25@gmail.com',
+                subject: "✅ SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                body: """
+                    Build réussi !
+                    Job: ${env.JOB_NAME}
+                    Build #: ${env.BUILD_NUMBER}
+                    URL: ${env.BUILD_URL}
+                    Durée: ${currentBuild.durationString}
+                """
+            )
         }
         failure {
             echo '❌ Pipeline failed! Check logs above.'
-            // mail(...)  // commenté temporairement
+            mail(
+                to: 'mohammedsoumare25@gmail.com',
+                subject: "❌ FAILURE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                body: """
+                    Build échoué !
+                    Job: ${env.JOB_NAME}
+                    Build #: ${env.BUILD_NUMBER}
+                    URL: ${env.BUILD_URL}
+                    État: ${currentBuild.currentResult}
+                    ⚠️ Action requise: Vérifiez les logs du build.
+                """
+            )
         }
+
     }
 }
